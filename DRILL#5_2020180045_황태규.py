@@ -11,28 +11,35 @@ hand_arrow = load_image('hand_arrow.png')
 target_x, target_y = random.randint(0, TUK_WIDTH), random.randint(0, TUK_HEIGHT)
 direction = 0  # 0: left, 1: right
 
+move_speed = 20 #여기서 속도를 조절할 수 있음
+
 def set_random_target():
     global target_x, target_y
-    target_x, target_y = random.randint(0, TUK_WIDTH), random.randint(0, TUK_HEIGHT)
+    target_x, target_y = random.randint(50, TUK_WIDTH - 50), random.randint(50, TUK_HEIGHT - 50) #화면 밖으로 나가지 않도록
 
 def move_towards_target(x, y):
     global direction
-    if target_x > x:
-        x += 1
+    dx, dy = 0, 0
+    distance_x = target_x - x
+    distance_y = target_y - y
+    theta = math.atan2(distance_y, distance_x)
+    dx = move_speed * math.cos(theta)
+    dy = move_speed * math.sin(theta)
+
+    if dx > 0:
         direction = 1
-    elif target_x < x:
-        x -= 1
+    else:
         direction = 0
 
-    if target_y > y:
-        y += 1
-    elif target_y < y:
-        y -= 1
-        
-    if x == target_x and y == target_y:
+    if math.sqrt((x+dx - target_x)**2 + (y+dy - target_y)**2) < move_speed:
+        x, y = target_x, target_y
         set_random_target()
-        
+    else:
+        x += dx
+        y += dy
+
     return x, y
+
 
 def handle_events():
     global running
@@ -55,7 +62,7 @@ while running:
     TUK_ground.draw(TUK_WIDTH // 2, TUK_HEIGHT // 2)
     hand_arrow.draw(target_x, target_y)
     
-    if direction == 5:
+    if direction == 1:
         character.clip_draw(frame * 100, 100 * 1, 100, 100, x, y)
     else:
         character.clip_draw(frame * 100, 100 * 0, 100, 100, x, y)
